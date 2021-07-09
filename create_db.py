@@ -47,8 +47,6 @@ def main():
         last_date TEXT NOT NULL
     ); """
 
-
-
     # create a database connection
     conn = create_connection(DB_FILE)
 
@@ -59,7 +57,6 @@ def main():
 
     else:
         print("Error! cannot create the database connection.")
-
 
 if __name__ == '__main__':
     main()

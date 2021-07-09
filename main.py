@@ -6,7 +6,8 @@ from config import *
 
 
 def create_connection(db_file):
-    """ create a database connection to the SQLite database
+    """ 
+    Create a database connection to the SQLite database
         specified by db_file
     :param db_file: database file
     :return: Connection object or None
@@ -22,7 +23,7 @@ def create_connection(db_file):
 
 
 def get_users(twit, type):
-    """ Ge list with user ids for Twitter friends or followers
+    """ Get list with user ids for Twitter friends or followers
     :param twit: Twitter connection
     :param type: Twitter user type (friends or followers)
     :return: list with ids
