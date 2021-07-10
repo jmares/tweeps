@@ -6,9 +6,28 @@ About the `.keep` files: **git** doesn't commit empty folders, so when I want an
 
 ## Goal
 
-The goal of this app is to answer some questions about my *tweeps*. There are existing solutions available, but I wanted to build one myself to practise python and sql.
+The goal of this app is to answer some questions about my *tweeps*. There are ready-made solutions available, but I wanted to build one myself to practise **python** and **sql**.
 
-The question I try to answer in v0.10 is who are the people who unfollow me? I have no intention of contacting those people. You are free to follow or unfollow me at your leisure. However, I cannot help but wonder who the people are who unfollowed me.  Were they long-time followers or recent ones? I tweet about several topics. Did I tweet too much or not enough about a certain topic?
+The question I try to answer in v0.10 is who are the people who unfollow me? 
+
+I have no intention of contacting those people. You are free to follow or unfollow me at your leisure. However, I cannot help but wonder who the people are who unfollowed me and why. Were they long-time followers or recent ones? I tweet about several topics. What do or did we have in common? Did I tweet too much or not enough about a certain topic?
+
+I hope this might shed some light on those questions.
+
+## Twitter
+
+You can get access to the Twitter API for free, rate limited, but you have to register as a developer.
+
+- [Twitter Developer Platform](https://developer.twitter.com/en)
+
+After you have registered, go to the developer portal and create a standalone app. You will need the following information to access the Twitter API with your app:
+
+- Access Token
+- Access Secret
+- API Key
+- API Secret
+
+This information needs to be included in the `config.py`. How? Copy the `config-sample.py` and fill in the values.
 
 ## Database
 
