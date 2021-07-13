@@ -3,6 +3,9 @@ import sqlite3
 from sqlite3 import Error
 import sys
 from config import *
+import logging
+from datetime import datetime, date
+from time import time
 
 
 def create_connection(db_file):
@@ -15,9 +18,10 @@ def create_connection(db_file):
     conn = None
     try:
         conn = sqlite3.connect(db_file)
+        logging.debug('connected to database')
         return conn
     except Error as e:
-        print(e)
+        logging.critical('could not connect to database: ' + e)
 
     return conn
 
@@ -28,12 +32,13 @@ def get_users(twit, type):
     :param type: Twitter user type (friends or followers)
     :return: list with ids
     """
-    
+    logging.debug('get_users: ' + type)
     if type == 'friends':
         resp = twit.friends.ids(count=5000)
     elif type == 'followers':
         resp = twit.followers.ids(count=5000)
     else:
+        logging.error('Unknow Twitter user type. Valid types: friends and followers. Error type: ' + str(type))
         raise Exception('Unknow Twitter user type. Valid types: friends and followers. Error type: ' + str(type))
 
     return resp['ids']
@@ -46,15 +51,15 @@ def update_followers(conn, twit):
     :param twit: Twitter connection
     :return: 
     """
+    logging.debug('update_followers')
     cur = conn.cursor()
 
     try:
         users = get_users(twit, 'followers')
     except Exception as e:
-        print(e)
+        logging.error('update_followers: ' + e)
         sys.exit(1)
 
-    print('\nStart followers\n')
     count = 0
 
     for id in users:
@@ -64,17 +69,17 @@ def update_followers(conn, twit):
         count += 1
 
         if cur.execute(sql_test, (id, )).fetchone():
-            # print('update', str(id))
+            logging.debug('update_followers: update ' + str(id))
             sql = '''UPDATE followers SET last_date = datetime(CURRENT_TIMESTAMP, 'localtime') WHERE twitter_id = ?'''
             cur.execute(sql, (id, ))
         else:
-            #print('insert', str(id))
+            logging.debug('update_followers: insert ' + str(id))
             sql = '''INSERT INTO followers(twitter_id, start_date, last_date)
                 VALUES(?, datetime(CURRENT_TIMESTAMP, 'localtime'), datetime(CURRENT_TIMESTAMP, 'localtime'))'''
             cur.execute(sql, (id, ))
         conn.commit()
     
-    print('\nCount:' + str(count) + '\n')
+    logging.info('update_followers: ' + str(count) + ' followers')
 
 
 def update_friends(conn, twit):
@@ -84,15 +89,16 @@ def update_friends(conn, twit):
     :param twit: Twitter connection
     :return: 
     """
+    logging.debug('update_friends')
     cur = conn.cursor()
 
     try:
         users = get_users(twit, 'friends')
     except Exception as e:
-        print(e)
+        logging.error('update_friends: ' + e)
         sys.exit(1)
 
-    print('\nStart friends\n')
+    # print('\nStart friends\n')
     count = 0
 
     for id in users:
@@ -102,17 +108,17 @@ def update_friends(conn, twit):
         count += 1
 
         if cur.execute(sql_test, (id, )).fetchone():
-            # print('update', str(id))
+            logging.debug('update_friends: update ' + str(id))
             sql = '''UPDATE friends SET last_date = datetime(CURRENT_TIMESTAMP, 'localtime') WHERE twitter_id = ?'''
             cur.execute(sql, (id, ))
         else:
-            # print('insert', str(id))
+            logging.debug('update_friends: update ' + str(id))
             sql = '''INSERT INTO friends(twitter_id, start_date, last_date)
                 VALUES(?, datetime(CURRENT_TIMESTAMP, 'localtime'), datetime(CURRENT_TIMESTAMP, 'localtime'))'''
             cur.execute(sql, (id, ))
         conn.commit()
 
-    print('\nCount:' + str(count) + '\n')
+    logging.info('update_friends: ' + str(count) + ' friends')
 
 
 def get_meta_data_followers(conn, twit):
@@ -122,6 +128,7 @@ def get_meta_data_followers(conn, twit):
     :param vacc:
     :return: row id
     """
+    logging.debug('get_meta_data_followers')
     cur = conn.cursor()
 
     # Test if the follower already exists
@@ -129,16 +136,16 @@ def get_meta_data_followers(conn, twit):
 
     res = cur.execute(sql)
     for twitter_id, in res:
-    #    print(twitter_id)
         try:
             user = twit.users.lookup(user_id=twitter_id)
-            print(user[0]['id'], user[0]['screen_name'])
+            logging.debug('get_meta_data_followers: ' + user[0]['id'] + ' ' + user[0]['screen_name'])
             add_meta_data_follower(conn, user[0])
         except TwitterHTTPError as err:
-            print("Exceeded rate limit", err)
+            logging.error('get_meta_data_followers: exceeded rate limit - ' + err)
             break
         except Exception as e:
-            print("Unknown error:", e)
+            logging.error('get_meta_data_followers: unknown error - ' + e)
+            continue
 
 
 def add_meta_data_follower(conn, user):
@@ -148,6 +155,7 @@ def add_meta_data_follower(conn, user):
     :param vacc:
     :return: row id
     """
+    logging.debug('add_meta_data_follower')
     cur = conn.cursor()
 
     update = '''UPDATE followers SET screen_name = ? WHERE twitter_id = ?'''
@@ -162,6 +170,7 @@ def get_meta_data_friends(conn, twit):
     :param vacc:
     :return: row id
     """
+    logging.debug('get_meta_data_friends')
     cur = conn.cursor()
 
     # Test if the follower already exists
@@ -169,16 +178,16 @@ def get_meta_data_friends(conn, twit):
 
     res = cur.execute(sql)
     for twitter_id, in res:
-    #    print(twitter_id)
         try:
             user = twit.users.lookup(user_id=twitter_id)
-            print(user[0]['id'], user[0]['screen_name'])
+            logging.debug('get_meta_data_friends: ' + user[0]['id'] + ' ' + user[0]['screen_name'])
             add_meta_data_friend(conn, user[0])
         except TwitterHTTPError as err:
-            print("Exceeded rate limit", err)
+            logging.error('get_meta_data_friends: exceeded rate limit - ' + err)
             break
         except Exception as e:
-            print("Unknown error:", e)
+            logging.error('get_meta_data_friends: unknown error - ' + e)
+            continue
 
 
 def add_meta_data_friend(conn, user):
@@ -188,6 +197,7 @@ def add_meta_data_friend(conn, user):
     :param vacc:
     :return: row id
     """
+    logging.debug('add_meta_data_friend')
     cur = conn.cursor()
 
     update = '''UPDATE friends SET screen_name = ? WHERE twitter_id = ?'''
@@ -198,13 +208,30 @@ def add_meta_data_friend(conn, user):
 
 def main():
 
+    start_time = time()
+    now = datetime.now()
+    log_file = LOG_DIR + 'tweeps_' + now.strftime('%a') + '.log'
+
+    log_level = logging.INFO
+    #logging.basicConfig(filename= log_file, format='%(asctime)s - %(levelname)s : %(message)s', level=log_level)
+    if (now.strftime('%H') in ('00', '01', '02', '03', '04', '05', '06', '07')):
+        fmode = 'w'
+    else:
+        fmode = 'a'
+    logging.basicConfig(filename=log_file, filemode=fmode, format='%(asctime)s - %(levelname)s : %(message)s', level=log_level)
+
+    logging.info('starting new run')
+
     # create a database connection
     dbconn = create_connection(DB_FILE)
     
-    twitconn = Twitter(auth=OAuth(TOKEN, TOKEN_SECRET, CONSUMER_KEY, CONSUMER_SECRET))
+    try:
+        twitconn = Twitter(auth=OAuth(TOKEN, TOKEN_SECRET, CONSUMER_KEY, CONSUMER_SECRET))
+    except Exception as e:
+        logging.critical('could not connect to Twitter: ' + e)
 
-    print(type(dbconn))
-    print(type(twitconn))
+    #print(type(dbconn))
+    #print(type(twitconn))
 
     update_followers(dbconn, twitconn)
     update_friends(dbconn, twitconn)
@@ -214,6 +241,11 @@ def main():
     #get_followers(conn, twit)
     
     #get_meta_data(conn, twit)
+    end_time = time()
+    duration = 'time needed for script: ' + str(round(end_time - start_time, 3)) + ' seconds\n\n'
+    logging.info(duration)
+    logging.debug('ending execution\n')
+
 
 if __name__ == '__main__':
     main()
