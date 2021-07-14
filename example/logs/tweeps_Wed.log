@@ -1,0 +1,27 @@
+2021-07-14 17:19:17,233 - INFO : starting new run
+2021-07-14 17:20:50,049 - INFO : starting new run
+2021-07-14 17:20:50,090 - INFO : create_connection: connected to database
+2021-07-14 17:21:03,348 - INFO : update_followers: 966 followers
+2021-07-14 17:21:10,555 - INFO : update_friends: 553 friends
+2021-07-14 17:21:10,556 - INFO : time needed for script: 20.507 seconds
+
+
+2021-07-14 17:23:22,339 - INFO : main: starting new run
+2021-07-14 17:23:22,345 - INFO : create_connection: connected to database
+2021-07-14 17:23:33,752 - INFO : update_followers: 966 followers
+2021-07-14 17:23:40,061 - INFO : update_friends: 553 friends
+2021-07-14 17:23:40,062 - INFO : time needed for script: 17.722 seconds
+
+
+2021-07-14 20:33:53,650 - INFO : main: start
+2021-07-14 20:34:04,657 - INFO : update_followers: 966 followers
+2021-07-14 20:34:11,100 - INFO : update_friends: 553 friends
+2021-07-14 20:34:11,100 - INFO : time needed for script: 17.45 seconds
+
+
+2021-07-14 20:50:22,123 - INFO : main: start
+2021-07-14 20:50:33,140 - INFO : update_followers: 966 followers
+2021-07-14 20:50:39,553 - INFO : update_friends: 553 friends
+2021-07-14 20:50:39,554 - INFO : time needed for script: 17.432 seconds
+
+

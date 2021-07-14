@@ -2,26 +2,30 @@ from twitter import *
 import sqlite3
 from sqlite3 import Error
 import sys
+import os
 from config import *
 import logging
 from datetime import datetime, date
-from time import time
-
+#from time import time
+import time
 
 def create_connection(db_file):
     """ 
-    Create a database connection to the SQLite database
-        specified by db_file
-    :param db_file: database file
+    Create a database connection to the SQLite database specified by db_file
+    :param db_file: path to database file
     :return: Connection object or None
     """
+    this_function = sys._getframe().f_code.co_name
+    logging.debug(this_function + ': start')
     conn = None
+
     try:
         conn = sqlite3.connect(db_file)
-        logging.debug('connected to database')
+        logging.debug(this_function + ': connected to database ' + db_file)
         return conn
     except Error as e:
-        logging.critical('could not connect to database: ' + e)
+        logging.critical(this_function + ': could not connect to database: ' + e)
+        sys.exit(1)
 
     return conn
 
@@ -32,6 +36,7 @@ def get_users(twit, type):
     :param type: Twitter user type (friends or followers)
     :return: list with ids
     """
+    this_function = sys._getframe().f_code.co_name
     logging.debug('get_users: ' + type)
     if type == 'friends':
         resp = twit.friends.ids(count=5000)
@@ -51,6 +56,7 @@ def update_followers(conn, twit):
     :param twit: Twitter connection
     :return: 
     """
+    this_function = sys._getframe().f_code.co_name
     logging.debug('update_followers')
     cur = conn.cursor()
 
@@ -89,6 +95,7 @@ def update_friends(conn, twit):
     :param twit: Twitter connection
     :return: 
     """
+    this_function = sys._getframe().f_code.co_name
     logging.debug('update_friends')
     cur = conn.cursor()
 
@@ -128,6 +135,7 @@ def get_meta_data_followers(conn, twit):
     :param vacc:
     :return: row id
     """
+    this_function = sys._getframe().f_code.co_name
     logging.debug('get_meta_data_followers')
     cur = conn.cursor()
 
@@ -155,6 +163,7 @@ def add_meta_data_follower(conn, user):
     :param vacc:
     :return: row id
     """
+    this_function = sys._getframe().f_code.co_name
     logging.debug('add_meta_data_follower')
     cur = conn.cursor()
 
@@ -170,6 +179,7 @@ def get_meta_data_friends(conn, twit):
     :param vacc:
     :return: row id
     """
+    this_function = sys._getframe().f_code.co_name
     logging.debug('get_meta_data_friends')
     cur = conn.cursor()
 
@@ -197,6 +207,7 @@ def add_meta_data_friend(conn, user):
     :param vacc:
     :return: row id
     """
+    this_function = sys._getframe().f_code.co_name
     logging.debug('add_meta_data_friend')
     cur = conn.cursor()
 
@@ -205,30 +216,57 @@ def add_meta_data_friend(conn, user):
     conn.commit()
 
 
+def get_log_file_mode(log_file):
+    """
+    Determine the file-mode for the log-file for weekday rotation
+    :param log_file: path for the log-file
+    :return: file-mode append or write, string
+    """
+    now = datetime.now()
+    # check if log-file exists 
+    if os.path.isfile(log_file):
+        # if the log-file exists, compare the file modified date to the current date
+        file_date = time.strftime("%Y-%m-%d", time.localtime(os.path.getmtime(log_file)))
+        if file_date == now.strftime("%Y-%m-%d"):
+            # if the modified date of the log file equals the current date, set file-mode to append
+            file_mode = 'a'
+        else:
+            # if the log-file is different (older), set file-mode to (over)write
+            file_mode = 'w'
+    else:
+        # if the log-file doesn't exist, set file-mode to write
+        file_mode = 'w'
+
+    return file_mode
+
 
 def main():
 
-    start_time = time()
+    this_function = sys._getframe().f_code.co_name
+    start_time = time.time()
     now = datetime.now()
+    # create log-file per weekday: tweeps_Wed.log
     log_file = LOG_DIR + 'tweeps_' + now.strftime('%a') + '.log'
-
     log_level = logging.INFO
-    #logging.basicConfig(filename= log_file, format='%(asctime)s - %(levelname)s : %(message)s', level=log_level)
-    if (now.strftime('%H') in ('00', '01', '02', '03', '04', '05', '06', '07')):
-        fmode = 'w'
-    else:
-        fmode = 'a'
-    logging.basicConfig(filename=log_file, filemode=fmode, format='%(asctime)s - %(levelname)s : %(message)s', level=log_level)
 
-    logging.info('starting new run')
+    file_mode = get_log_file_mode(log_file)
+    logging.basicConfig(filename=log_file, filemode=file_mode, format='%(asctime)s - %(levelname)s : %(message)s', level=log_level)
 
-    # create a database connection
-    dbconn = create_connection(DB_FILE)
+    logging.info(this_function + ': start')
+
+    # create a SQLite database connection
+    try:
+        dbconn = create_connection(DB_FILE)
+    except Exception as e:
+        logging.critical(this_function + ': could not connect to database: ' + e)
+        sys.exit(1)
     
+    # create a Twitter connection
     try:
         twitconn = Twitter(auth=OAuth(TOKEN, TOKEN_SECRET, CONSUMER_KEY, CONSUMER_SECRET))
     except Exception as e:
-        logging.critical('could not connect to Twitter: ' + e)
+        logging.critical(this_function + ': could not connect to Twitter: ' + e)
+        sys.exit(1)
 
     #print(type(dbconn))
     #print(type(twitconn))
@@ -241,11 +279,10 @@ def main():
     #get_followers(conn, twit)
     
     #get_meta_data(conn, twit)
-    end_time = time()
+    end_time = time.time()
     duration = 'time needed for script: ' + str(round(end_time - start_time, 3)) + ' seconds\n\n'
     logging.info(duration)
     logging.debug('ending execution\n')
-
 
 if __name__ == '__main__':
     main()

@@ -70,3 +70,6 @@ The script `create_db.py` will create the database with two tables for you. It r
 ## Importing the Data
 
 ## Using the Data
+
+
+## Logging
