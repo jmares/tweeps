@@ -146,7 +146,7 @@ def get_meta_data_followers(conn, twit):
     for twitter_id, in res:
         try:
             user = twit.users.lookup(user_id=twitter_id)
-            logging.debug('get_meta_data_followers: ' + user[0]['id'] + ' ' + user[0]['screen_name'])
+            logging.debug('get_meta_data_followers: ' + str(user[0]['id']) + ' ' + user[0]['screen_name'])
             add_meta_data_follower(conn, user[0])
         except TwitterHTTPError as err:
             logging.error('get_meta_data_followers: exceeded rate limit - ' + err)
@@ -190,7 +190,7 @@ def get_meta_data_friends(conn, twit):
     for twitter_id, in res:
         try:
             user = twit.users.lookup(user_id=twitter_id)
-            logging.debug('get_meta_data_friends: ' + user[0]['id'] + ' ' + user[0]['screen_name'])
+            logging.debug('get_meta_data_friends: ' + str(user[0]['id']) + ' ' + user[0]['screen_name'])
             add_meta_data_friend(conn, user[0])
         except TwitterHTTPError as err:
             logging.error('get_meta_data_friends: exceeded rate limit - ' + err)
