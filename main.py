@@ -88,7 +88,7 @@ def update_users(dbcon, twitcon, user_type):
     logging.info(f"{this_function}: {str(count)} {user_type}")
 
 
-def get_meta_data_followers(conn, twit):
+def get_metadata_users(dbcon, twitcon, user_type):
     """
     Create a new project into the vaccinations table
     :param conn:
@@ -96,27 +96,27 @@ def get_meta_data_followers(conn, twit):
     :return: row id
     """
     this_function = sys._getframe().f_code.co_name
-    logging.debug(this_function)
-    cur = conn.cursor()
+    logging.debug(f"{this_function} - {user_type}")
+    cur = dbcon.cursor()
 
     # Test if the follower already exists
-    sql = '''SELECT twitter_id FROM followers WHERE screen_name IS NULL'''
+    sql = f'''SELECT twitter_id FROM {user_type} WHERE screen_name IS NULL'''
 
     res = cur.execute(sql)
     for twitter_id, in res:
         try:
-            user = twit.users.lookup(user_id=twitter_id)
-            logging.debug(this_function + ': ' + str(user[0]['id']) + ' ' + user[0]['screen_name'])
-            add_meta_data_follower(conn, user[0])
+            user = twitcon.users.lookup(user_id=twitter_id)
+            logging.debug(f"{this_function} - {user_type}: {str(user[0]['id'])} {user[0]['screen_name']}")
+            add_metadata_user(dbcon, user[0], user_type)
         except TwitterHTTPError as err:
-            logging.error(this_function + ': exceeded rate limit - ' + err)
+            logging.error(f"{this_function} - {user_type}: exceeded rate limit -  {err}")
             break
         except Exception as e:
-            logging.error(this_function + ': unknown error - ' + e)
+            logging.error(f"{this_function} - {user_type}: unexpected error -  {e}")
             continue
 
 
-def add_meta_data_follower(conn, user):
+def add_metadata_user(dbcon, user, user_type):
     """
     Create a new project into the vaccinations table
     :param conn:
@@ -124,56 +124,13 @@ def add_meta_data_follower(conn, user):
     :return: row id
     """
     this_function = sys._getframe().f_code.co_name
-    logging.debug(this_function)
-    cur = conn.cursor()
+    logging.debug(f"{this_function} - {user_type}")
+    cur = dbcon.cursor()
 
-    update = '''UPDATE followers SET screen_name = ? WHERE twitter_id = ?'''
+    update = f'''UPDATE {user_type} SET screen_name = ? WHERE twitter_id = ?'''
+    logging.debug(f"{this_function} - {user_type}: {str(user['id'])} {user['screen_name']}")
     cur.execute(update, (user['screen_name'], user['id']))
-    conn.commit()
-
-
-def get_meta_data_friends(conn, twit):
-    """
-    Create a new project into the vaccinations table
-    :param conn:
-    :param vacc:
-    :return: row id
-    """
-    this_function = sys._getframe().f_code.co_name
-    logging.debug(this_function)
-    cur = conn.cursor()
-
-    # Test if the follower already exists
-    sql = '''SELECT twitter_id FROM friends WHERE screen_name IS NULL'''
-
-    res = cur.execute(sql)
-    for twitter_id, in res:
-        try:
-            user = twit.users.lookup(user_id=twitter_id)
-            logging.debug(this_function + ': ' + str(user[0]['id']) + ' ' + user[0]['screen_name'])
-            add_meta_data_friend(conn, user[0])
-        except TwitterHTTPError as err:
-            logging.error(this_function + ': exceeded rate limit - ' + err)
-            break
-        except Exception as e:
-            logging.error(this_function + ': unknown error - ' + e)
-            continue
-
-
-def add_meta_data_friend(conn, user):
-    """
-    Create a new project into the vaccinations table
-    :param conn:
-    :param vacc:
-    :return: row id
-    """
-    this_function = sys._getframe().f_code.co_name
-    logging.debug(this_function)
-    cur = conn.cursor()
-
-    update = '''UPDATE friends SET screen_name = ? WHERE twitter_id = ?'''
-    cur.execute(update, (user['screen_name'], user['id']))
-    conn.commit()
+    dbcon.commit()
 
 
 def get_log_file_mode(log_file):
@@ -234,14 +191,14 @@ def main():
 
     update_users(dbconn, twitconn, 'followers')
     update_users(dbconn, twitconn, 'friends')
-    get_meta_data_followers(dbconn, twitconn)
-    get_meta_data_friends(dbconn, twitconn)
+    get_metadata_users(dbconn, twitconn, 'followers')
+    get_metadata_users(dbconn, twitconn, 'friends')
 
     #get_followers(conn, twit)
     
     #get_meta_data(conn, twit)
     end_time = time.time()
-    duration = 'time needed for script: ' + str(round(end_time - start_time, 3)) + ' seconds\n\n'
+    duration = 'time needed for script: ' + str(round(end_time - start_time, 3)) + ' seconds\n'
     logging.info(duration)
     logging.debug('ending execution\n')
 
