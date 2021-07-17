@@ -13,7 +13,7 @@ def create_connection(db_file):
     """ 
     Create a database connection to the SQLite database specified by db_file
     :param db_file: path to database file
-    :return: Connection object or None
+    :return: SQLite3 connection or None
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(this_function + ': start')
@@ -30,18 +30,18 @@ def create_connection(db_file):
     return conn
 
 
-def get_users(twit, user_type):
+def get_users(twitcon, user_type):
     """ Get list with user ids for Twitter friends or followers
-    :param twit: Twitter connection
-    :param type: Twitter user type (friends or followers)
-    :return: list with ids
+    :param twitcon: Twitter connection
+    :param user_type: Twitter user type (friends or followers)
+    :return: list with Twitter ids
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function} - {user_type}")
     if user_type == 'friends':
-        resp = twit.friends.ids(count=5000)
+        resp = twitcon.friends.ids(count=5000)
     elif user_type == 'followers':
-        resp = twit.followers.ids(count=5000)
+        resp = twitcon.followers.ids(count=5000)
     else:
         msg = f"Unknow Twitter user type. Valid types: friends and followers. Error type: {str(user_type)}"
         logging.error(msg)
@@ -49,12 +49,13 @@ def get_users(twit, user_type):
 
     return resp['ids']
 
+
 def update_users(dbcon, twitcon, user_type):
     """
     Update Twitter users list: insert if new user and update when existing user
-    :param conn: Database conection
-    :param twit: Twitter connection
-    :param twit: User type (friends or followers)
+    :param dbcon: Database connection
+    :param twitcon: Twitter connection
+    :param user_type: User type (friends or followers)
     :return: 
     """
     this_function = sys._getframe().f_code.co_name
@@ -83,6 +84,7 @@ def update_users(dbcon, twitcon, user_type):
             sql = f'''INSERT INTO {user_type} (twitter_id, start_date, last_date)
                 VALUES(?, datetime(CURRENT_TIMESTAMP, 'localtime'), datetime(CURRENT_TIMESTAMP, 'localtime'))'''
             cur.execute(sql, (id, ))
+
         dbcon.commit()
     
     logging.info(f"{this_function}: {str(count)} {user_type}")
@@ -90,10 +92,11 @@ def update_users(dbcon, twitcon, user_type):
 
 def get_metadata_users(dbcon, twitcon, user_type):
     """
-    Create a new project into the vaccinations table
-    :param conn:
-    :param vacc:
-    :return: row id
+    Get metadata for the users with missing metadata
+    :param dbcon: Database connection
+    :param twitcon: Twitter connection
+    :param user_type: User type (friends or followers)
+    :return: 
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function} - {user_type}")
@@ -118,10 +121,11 @@ def get_metadata_users(dbcon, twitcon, user_type):
 
 def add_metadata_user(dbcon, user, user_type):
     """
-    Create a new project into the vaccinations table
-    :param conn:
-    :param vacc:
-    :return: row id
+    Add metadata for a specific user (currently only screenname)
+    :param dbcon: Database connection
+    :param user: dictionary with user metadata
+    :param user_type: User type (friends or followers)
+    :return: 
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function} - {user_type}")
@@ -164,8 +168,7 @@ def main():
     now = datetime.now()
     # create log-file per weekday: tweeps_Wed.log
     log_file = LOG_DIR + 'tweeps_' + now.strftime('%a') + '.log'
-    #log_level = logging.INFO
-    log_level = logging.DEBUG
+    log_level = logging.INFO
 
     file_mode = get_log_file_mode(log_file)
     logging.basicConfig(filename=log_file, filemode=file_mode, format='%(asctime)s - %(levelname)s : %(message)s', level=log_level)
@@ -186,21 +189,16 @@ def main():
         logging.critical(this_function + ': could not connect to Twitter: ' + e)
         sys.exit(1)
 
-    #print(type(dbconn))
-    #print(type(twitconn))
-
     update_users(dbconn, twitconn, 'followers')
     update_users(dbconn, twitconn, 'friends')
     get_metadata_users(dbconn, twitconn, 'followers')
     get_metadata_users(dbconn, twitconn, 'friends')
 
-    #get_followers(conn, twit)
-    
-    #get_meta_data(conn, twit)
     end_time = time.time()
     duration = 'time needed for script: ' + str(round(end_time - start_time, 3)) + ' seconds\n'
     logging.info(duration)
     logging.debug('ending execution\n')
+
 
 if __name__ == '__main__':
     main()
