@@ -4,3 +4,4 @@ CONSUMER_KEY = 'Your Twitter API Key'
 CONSUMER_SECRET = 'Your Twitter API Key Secret'
 
 DB_FILE = r"db/tweeps.db"
+LOG_DIR = "./examples/logs/"
