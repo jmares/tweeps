@@ -201,7 +201,7 @@ def main():
     end_time = time.time()
     duration = str(round(end_time - start_time, 3))
     logging.info(f"{this_function}: time needed for script {duration} seconds\n")
-    logging.debug('{this_function}: ending execution\n')
+    logging.debug(f"{this_function}: ending execution\n")
 
 
 if __name__ == '__main__':

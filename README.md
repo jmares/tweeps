@@ -65,6 +65,7 @@ Attributes/fields/columns:
 - last_date: the last time that this person was a follower or a friend
 
 The script `create_db.py` will create the database with two tables for you. It requires a writable `db` folder in the current directory.
+
 ## Twitter
 
 ## Importing the Data
@@ -73,3 +74,13 @@ The script `create_db.py` will create the database with two tables for you. It r
 
 
 ## Logging
+
+Each function starts with the statement:
+
+```python
+this_function = sys._getframe().f_code.co_name
+```
+
+This stores the name of the current function in the variable `this_function`.    
+Why not just type the name of the function `this_function = "main"`? If I merge 2 functions, split a function, or rename a function, I will have to manually verify that all the `this_function` variables have the correct value, wich isn't the case when I assign it the value derived from `sys._getframe().f_code.co_name`.
+
