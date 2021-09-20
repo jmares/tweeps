@@ -1,13 +1,20 @@
+"""Create DB, by Johan Mares
+Create the database for the Tweeps project."""
+
 import sqlite3
 from sqlite3 import Error
 from config import DB_FILE
 
 
-def create_connection(db_file):
-    """Create a database connection to the SQLite database
-
-    :param db_file: path to database file, string
-    :return: SQLite3 Connection or None
+def create_dbconnection(db_file):
+    """ 
+    Create a database connection to the SQLite database specified by db_file
+    
+    Parameters:
+    db_file (str): path to database file
+    
+    Returns: 
+    SQLite3 connection or None
     """
     conn = None
     try:
@@ -21,9 +28,12 @@ def create_connection(db_file):
 def create_table(conn, ddl_sql):
     """Create a table from a given DDL statement
 
-    :param conn: SQLite3 Connection
-    :param ddl_sql: a CREATE TABLE statement, string
-    :return: Boolean
+    Parameters: 
+    conn: SQLite3 Connection
+    ddl_sql (str): a CREATE TABLE statement
+    
+    Returns: 
+    boolean
     """
     try:
         c = conn.cursor()
@@ -35,7 +45,7 @@ def create_table(conn, ddl_sql):
 
 
 def main():
-    """Create database with two tables """
+    """Create database with two tables for the Tweeps project"""
 
     sql_create_followers = """CREATE TABLE IF NOT EXISTS followers(
         twitter_id INTEGER PRIMARY KEY,
@@ -52,7 +62,7 @@ def main():
     ); """
 
     # create a database connection
-    conn = create_connection(DB_FILE)
+    conn = create_dbconnection(DB_FILE)
 
     # create tables
     if conn is not None:
@@ -62,5 +72,6 @@ def main():
         print("Error! cannot create the database connection.")
 
 
+# If this program was run (instead of imported), run:
 if __name__ == '__main__':
     main()
