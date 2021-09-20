@@ -1,3 +1,6 @@
+"""TWEEPS, by Johan Mares
+Keeping track of your Twitter followers and friends."""
+
 from twitter import *
 import sqlite3
 from sqlite3 import Error
@@ -11,8 +14,12 @@ import time
 def create_dbconnection(db_file):
     """ 
     Create a database connection to the SQLite database specified by db_file
-    :param db_file: path to database file
-    :return: SQLite3 connection or None
+    
+    Parameters:
+    db_file (str): path to database file
+    
+    Returns: 
+    SQLite3 connection or None
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function}: start")
@@ -32,9 +39,13 @@ def create_dbconnection(db_file):
 def get_users(twitcon, user_type):
     """ 
     Get list with user ids for Twitter friends or followers
-    :param twitcon: Twitter connection
-    :param user_type: Twitter user type (friends or followers)
-    :return: list with Twitter ids
+
+    Parameters:
+    twitcon: Twitter connection
+    user_type (str): Twitter user type ('friends' or 'followers')
+
+    Returns: 
+    list: list with Twitter ids
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function} - {user_type}")
@@ -54,10 +65,13 @@ def get_users(twitcon, user_type):
 def update_users(dbcon, twitcon, user_type):
     """
     Update Twitter users list: insert if new user and update when existing user
-    :param dbcon: Database connection
-    :param twitcon: Twitter connection
-    :param user_type: User type (friends or followers), specifies table in database
-    :return: 
+
+    Parameters:
+    dbcon: Database connection
+    twitcon: Twitter connection
+    user_type (str): Twitter user type ('friends' or 'followers')
+
+    Returns:
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function} - {user_type}")
@@ -97,10 +111,13 @@ def update_users(dbcon, twitcon, user_type):
 def get_metadata_users(dbcon, twitcon, user_type):
     """
     Get metadata for the users with missing metadata
-    :param dbcon: Database connection
-    :param twitcon: Twitter connection
-    :param user_type: User type (friends or followers)
-    :return: 
+
+    Parameters:
+    dbcon: Database connection
+    twitcon: Twitter connection
+    user_type (str): Twitter user type ('friends' or 'followers')
+
+    Returns: 
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function} - {user_type}")
@@ -126,10 +143,13 @@ def get_metadata_users(dbcon, twitcon, user_type):
 def add_metadata_user(dbcon, user, user_type):
     """
     Add metadata for a specific user (currently only screenname)
-    :param dbcon: Database connection
-    :param user: dictionary with user metadata
-    :param user_type: User type (friends or followers)
-    :return: 
+
+    Parameters 
+    dbcon: Database connection
+    user (dictionary): user data
+    user_type (str): Twitter user type ('friends' or 'followers')
+    
+    Returns: 
     """
     this_function = sys._getframe().f_code.co_name
     logging.debug(f"{this_function} - {user_type}")
@@ -144,8 +164,12 @@ def add_metadata_user(dbcon, user, user_type):
 def get_log_file_mode(log_file):
     """
     Determine the file-mode for the log-file for weekday rotation
-    :param log_file: path for the log-file
-    :return: file-mode append or write, string
+
+    Parameters:
+    log_file (str): path for the log-file
+
+    Returns: 
+    string: file-mode append ('a') or write ('w')
     """
     now = datetime.now()
     # check if log-file exists 
@@ -166,6 +190,9 @@ def get_log_file_mode(log_file):
 
 
 def main():
+    """
+    Adds and updates your Twitter users (friends & followers) in SQLite3 database
+    """
 
     this_function = sys._getframe().f_code.co_name
     start_time = time.time()
@@ -204,5 +231,6 @@ def main():
     logging.debug(f"{this_function}: ending execution\n")
 
 
+# If this program was run (instead of imported), run:
 if __name__ == '__main__':
     main()
